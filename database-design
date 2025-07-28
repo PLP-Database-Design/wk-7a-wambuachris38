@@ -1,0 +1,32 @@
+-- Create a 1NF-compliant ProductDetail_1NF table
+SELECT 
+    OrderID, 
+    CustomerName, 
+    TRIM(Product) AS Product
+FROM 
+    (
+        SELECT 
+            OrderID, 
+            CustomerName, 
+            SUBSTRING_INDEX(SUBSTRING_INDEX(Products, ',', n.n), ',', -1) AS Product
+        FROM 
+            ProductDetail
+        JOIN 
+            (
+                SELECT 1 AS n UNION SELECT 2 UNION SELECT 3
+            ) AS n
+        ON CHAR_LENGTH(Products) - CHAR_LENGTH(REPLACE(Products, ',', '')) >= n.n - 1
+    ) AS split_products;
+-- Define customer information per order (eliminating partial dependency)
+SELECT DISTINCT 
+    OrderID, 
+    CustomerName
+FROM 
+    OrderDetails;
+-- Each row fully depends on OrderID and Product together
+SELECT 
+    OrderID, 
+    Product, 
+    Quantity
+FROM 
+    OrderDetails;
